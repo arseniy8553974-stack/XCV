@@ -1,0 +1,432 @@
+-- // 💀 БОГ СТИХИЙ | ВЫЖИВАНИЕ В СТИХИЙНЫХ БЕДСТВИЯХ 💀 //
+-- // Персональный скрипт с GUI, ножом и всеми эффектами //
+
+-- 1. ИНИЦИАЛИЗАЦИЯ И БЕЛЫЙ СПИСОК
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+
+-- 🔒 Доступ только для ваших аккаунтов
+local Whitelist = {
+    "asdqwer90095",
+    "jhgfdsapoiuytrewq007"
+}
+
+if not table.find(Whitelist, LocalPlayer.Name) then
+    return
+end
+
+-- 2. НАСТРОЙКИ
+local Settings = {
+    GodMode = true,
+    SpeedHack = 70,
+    JumpPower = 120,
+    Noclip = true,
+    Fly = true,
+    KillAura = true,
+    BlockMagnet = true,
+    AutoFarm = true,
+    AntiDisaster = true,
+    ESP = true,
+    KnifeMode = true      -- Режим ножа с медленным уроном
+}
+
+-- 3. СОЗДАНИЕ GUI (КРАСИВОЕ МЕНЮ)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DisasterGodGUI"
+ScreenGui.Parent = CoreGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 320, 0, 560)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -280)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.BackgroundTransparency = 0.15
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 16)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(255, 50, 50)
+UIStroke.Thickness = 3
+UIStroke.Transparency = 0.4
+UIStroke.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.BackgroundTransparency = 1
+Title.Text = "💀 БОГ СТИХИЙ 💀"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 24
+Title.Font = Enum.Font.GothamBlack
+Title.Parent = MainFrame
+
+local TitleGradient = Instance.new("UIGradient")
+TitleGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 0, 255))
+})
+TitleGradient.Rotation = 45
+TitleGradient.Parent = Title
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 36, 0, 36)
+CloseButton.Position = UDim2.new(1, -44, 0, 7)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+CloseButton.BackgroundTransparency = 0.3
+CloseButton.Text = "✕"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 26
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Parent = MainFrame
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 12)
+CloseCorner.Parent = CloseButton
+
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+local ScrollingFrame = Instance.new("ScrollingFrame")
+ScrollingFrame.Size = UDim2.new(1, -20, 1, -60)
+ScrollingFrame.Position = UDim2.new(0, 10, 0, 55)
+ScrollingFrame.BackgroundTransparency = 1
+ScrollingFrame.BorderSizePixel = 0
+ScrollingFrame.ScrollBarThickness = 5
+ScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 50, 50)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 650)
+ScrollingFrame.Parent = MainFrame
+
+local function createToggle(name, settingName, yPos, icon)
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(1, -10, 0, 45)
+    Button.Position = UDim2.new(0, 5, 0, yPos)
+    Button.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    Button.BackgroundTransparency = 0.4
+    Button.BorderSizePixel = 0
+    Button.Text = icon .. " " .. name .. ": " .. (Settings[settingName] and "✅ ВКЛ" or "❌ ВЫКЛ")
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.TextSize = 15
+    Button.Font = Enum.Font.GothamSemibold
+    Button.Parent = ScrollingFrame
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.Parent = Button
+
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Color3.fromRGB(255, 50, 50)
+    Stroke.Thickness = 2
+    Stroke.Transparency = 0.5
+    Stroke.Parent = Button
+
+    Button.MouseButton1Click:Connect(function()
+        Settings[settingName] = not Settings[settingName]
+        Button.Text = icon .. " " .. name .. ": " .. (Settings[settingName] and "✅ ВКЛ" or "❌ ВЫКЛ")
+    end)
+
+    return Button
+end
+
+createToggle("Неуязвимость", "GodMode", 15, "🛡️")
+createToggle("Скорость x3", "SpeedHack", 70, "⚡")
+createToggle("Супер-прыжок", "JumpPower", 125, "🦘")
+createToggle("Проходить сквозь стены", "Noclip", 180, "🚧")
+createToggle("Полёт (клавиша F)", "Fly", 235, "🪽")
+createToggle("Убийственная аура", "KillAura", 290, "💀")
+createToggle("Режим ножа", "KnifeMode", 345, "🔪")
+createToggle("Магнит для блоков", "BlockMagnet", 400, "🧲")
+createToggle("Авто-ферма", "AutoFarm", 455, "💰")
+createToggle("Анти-стихия", "AntiDisaster", 510, "🌪️")
+createToggle("Подсветка (ESP)", "ESP", 565, "👁️")
+
+local ResetButton = Instance.new("TextButton")
+ResetButton.Size = UDim2.new(1, -10, 0, 50)
+ResetButton.Position = UDim2.new(0, 5, 0, 620)
+ResetButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+ResetButton.BackgroundTransparency = 0.3
+ResetButton.BorderSizePixel = 0
+ResetButton.Text = "🔄 СБРОСИТЬ ВСЕ НАСТРОЙКИ"
+ResetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ResetButton.TextSize = 16
+ResetButton.Font = Enum.Font.GothamBold
+ResetButton.Parent = ScrollingFrame
+
+local ResetCorner = Instance.new("UICorner")
+ResetCorner.CornerRadius = UDim.new(0, 10)
+ResetCorner.Parent = ResetButton
+
+ResetButton.MouseButton1Click:Connect(function()
+    for k, v in pairs(Settings) do
+        Settings[k] = true
+    end
+    ScreenGui:Destroy()
+    wait(0.1)
+    loadstring(game:HttpGet(""))()
+end)
+
+-- 4. ФУНКЦИОНАЛЬНАЯ ЧАСТЬ
+
+-- Характеристики персонажа
+LocalPlayer.CharacterAdded:Connect(function(char)
+    local hum = char:WaitForChild("Humanoid")
+    hum:GetPropertyChangedSignal("Health"):Connect(function()
+        if Settings.GodMode and hum.Health < hum.MaxHealth then
+            hum.Health = hum.MaxHealth
+        end
+    end)
+    if Settings.SpeedHack then hum.WalkSpeed = 70 end
+    if Settings.JumpPower then hum.JumpPower = 120 end
+end)
+
+-- Noclip
+RunService.Stepped:Connect(function()
+    if Settings.Noclip and LocalPlayer.Character then
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then part.CanCollide = false end
+        end
+    end
+end)
+
+-- Полёт
+local flying = false
+local flySpeed = 60
+local bg, bv
+
+local function startFly()
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChild("Humanoid")
+    if not root or not hum then return end
+    flying = true
+    bg = Instance.new("BodyGyro")
+    bg.P = 9e4
+    bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    bg.CFrame = root.CFrame
+    bg.Parent = root
+    bv = Instance.new("BodyVelocity")
+    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    bv.Velocity = Vector3.zero
+    bv.Parent = root
+    hum.PlatformStand = true
+end
+
+local function stopFly()
+    flying = false
+    if bg then bg:Destroy() end
+    if bv then bv:Destroy() end
+    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+    if hum then hum.PlatformStand = false end
+end
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.KeyCode == Enum.KeyCode.F and Settings.Fly then
+        if flying then stopFly() else startFly() end
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if flying and Settings.Fly then
+        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            local cam = workspace.CurrentCamera
+            local move = Vector3.zero
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then move += cam.CFrame.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then move -= cam.CFrame.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then move -= cam.CFrame.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then move += cam.CFrame.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then move += Vector3.new(0, 1, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then move -= Vector3.new(0, 1, 0) end
+            if bv then bv.Velocity = move * flySpeed end
+            if bg then bg.CFrame = cam.CFrame end
+        end
+    end
+end)
+
+-- Магнит для блоков (визуальный эффект)
+local orbitingBlocks = {}
+
+spawn(function()
+    while true do
+        wait(0.1)
+        if Settings.BlockMagnet and LocalPlayer.Character then
+            local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") and (obj.Name:lower():find("brick") or obj.Name:lower():find("block")) then
+                        local block = Instance.new("Part")
+                        block.Size = obj.Size
+                        block.Shape = obj.Shape
+                        block.Color = obj.Color
+                        block.Material = obj.Material
+                        block.Transparency = 0.3
+                        block.Anchored = true
+                        block.CanCollide = false
+                        block.Parent = workspace
+                        table.insert(orbitingBlocks, block)
+                        obj:Destroy()
+                    end
+                end
+            end
+        end
+    end
+end)
+
+spawn(function()
+    local angle = 0
+    while true do
+        RunService.RenderStepped:Wait()
+        if Settings.BlockMagnet and LocalPlayer.Character then
+            local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                angle = angle + 0.1
+                for i, block in ipairs(orbitingBlocks) do
+                    if block and block.Parent then
+                        local offset = Vector3.new(math.cos(angle + i) * 5, math.sin(angle * 0.5 + i) * 3, math.sin(angle + i) * 5)
+                        block.Position = root.Position + offset
+                        block.Orientation = Vector3.new(angle * 50, angle * 30, angle * 70)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- Убийственная аура и Режим ножа
+local knifeModel = nil
+
+local function giveKnife()
+    if knifeModel then knifeModel:Destroy() end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local handle = Instance.new("Part")
+    handle.Size = Vector3.new(0.2, 1, 0.2)
+    handle.Color = Color3.fromRGB(50, 50, 50)
+    handle.Material = Enum.Material.Metal
+    handle.Anchored = false
+    handle.CanCollide = false
+    handle.Parent = char
+    
+    local blade = Instance.new("Part")
+    blade.Size = Vector3.new(0.2, 0.8, 0.05)
+    blade.Color = Color3.fromRGB(200, 200, 200)
+    blade.Material = Enum.Material.Metal
+    blade.Anchored = false
+    blade.CanCollide = false
+    blade.Parent = char
+    
+    local weld1 = Instance.new("Weld", handle)
+    weld1.Part0 = handle
+    weld1.Part1 = char:FindFirstChild("RightHand") or char:FindFirstChild("HumanoidRootPart")
+    weld1.C0 = CFrame.new(0, 0.5, 0)
+    
+    local weld2 = Instance.new("Weld", blade)
+    weld2.Part0 = blade
+    weld2.Part1 = handle
+    weld2.C0 = CFrame.new(0, 0.9, 0)
+    
+    knifeModel = {handle, blade}
+end
+
+spawn(function()
+    while true do
+        wait(0.5)
+        if Settings.KillAura and LocalPlayer.Character then
+            local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character then
+                        local hum = player.Character:FindFirstChild("Humanoid")
+                        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                        if hum and hrp and (hrp.Position - root.Position).Magnitude < 20 then
+                            if Settings.KnifeMode then
+                                giveKnife()
+                                -- Медленный урон (локально)
+                                for i = 1, 5 do
+                                    hum.Health = math.max(hum.Health - 10, 0)
+                                    wait(0.5)
+                                end
+                            else
+                                hum.Health = 0
+                            end
+                        end
+                    end
+                end
+            end
+        else
+            if knifeModel then
+                for _, obj in ipairs(knifeModel) do obj:Destroy() end
+                knifeModel = nil
+            end
+        end
+    end
+end)
+
+-- Авто-ферма
+spawn(function()
+    while true do
+        wait(1)
+        if Settings.AutoFarm and LocalPlayer.Character then
+            local char = LocalPlayer.Character
+            local root = char:FindFirstChild("HumanoidRootPart")
+            if root then
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") and obj.Name == "SafeZone" then
+                        root.CFrame = obj.CFrame + Vector3.new(0, 5, 0)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- Анти-стихия
+spawn(function()
+    while true do
+        wait(0.1)
+        if Settings.AntiDisaster and LocalPlayer.Character then
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and (obj.Name:lower():find("tornado") or obj.Name:lower():find("meteor") or obj.Name:lower():find("lava")) then
+                    obj.CanCollide = false
+                    obj.Transparency = 0.8
+                end
+            end
+        end
+    end
+end)
+
+-- ESP
+spawn(function()
+    while true do
+        wait(1)
+        if Settings.ESP then
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character then
+                    local existing = player.Character:FindFirstChild("ESP_Highlight")
+                    if not existing then
+                        local highlight = Instance.new("Highlight")
+                        highlight.Name = "ESP_Highlight"
+                        highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                        highlight.FillTransparency = 0.5
+                        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        highlight.OutlineTransparency = 0
+                        highlight.Parent = player.Character
+                    end
+                end
+            end
+        end
+    end
+end)
+
+print("💀 Скрипт 'БОГ СТИХИЙ' активирован! Наслаждайтесь.")
